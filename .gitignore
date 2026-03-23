@@ -1,0 +1,28 @@
+# Build
+*.iml
+.gradle
+**/build
+
+# Local config
+local.properties
+
+# IDE
+/.idea
+/.kotlin
+.DS_Store
+
+# Android
+*.apk
+*.aab
+*.jks
+*.keystore
+/captures
+.externalNativeBuild
+.cxx
+
+# Project docs (non versionnés)
+/idées interface
+/documentation
+project.md
+history.md
+GEMINI.md
