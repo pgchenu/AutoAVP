@@ -76,4 +76,4 @@ cd AutoAVP
 
 ## Licence
 
-Ce projet est distribué sous licence [MIT](LICENSE).
+Ce projet est distribué sous licence GPL 3
