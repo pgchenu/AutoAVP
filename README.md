@@ -1,72 +1,79 @@
-# AutoAVP
+<p align="center">
+  <img src="app/src/main/res/drawable/ic_launcher_foreground.xml" width="100" alt="AutoAVP logo"/>
+</p>
 
-AutoAVP est une application Android destinée à assister les facteurs de La Poste dans le traitement des avis de passage. Elle permet de numériser les informations présentes sur les courriers (numéro de suivi et adresse du destinataire) afin d'automatiser le remplissage des avis de passage.
+<h1 align="center">AutoAVP</h1>
+
+<p align="center">
+  <strong>Automatisez la saisie et l'impression des Avis de Passage postaux</strong>
+</p>
+
+<p align="center">
+  <img alt="Android" src="https://img.shields.io/badge/Android-28%2B-3DDC84?logo=android&logoColor=white"/>
+  <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-Jetpack%20Compose-7F52FF?logo=kotlin&logoColor=white"/>
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-blue"/>
+</p>
+
+---
+
+AutoAVP est une application Android qui permet aux agents postaux de **scanner les codes-barres et DataMatrix** des courriers recommandés, d'en extraire automatiquement le numéro de suivi et l'adresse du destinataire par OCR, puis de **générer et imprimer les Avis de Passage** (AVP) correspondants, prêts à être déposés en boîte aux lettres.
 
 ## Fonctionnalités
 
-### Numérisation et reconnaissance
-L'application utilise l'appareil photo du terminal pour capturer les données des courriers.
-*   **Modes de scan** : permet un traitement unitaire ou par lots (scan multiple) pour préparer une tournée.
-*   **Lecture hybride** : combine la lecture des codes-barres (Datamatrix et standards) et la reconnaissance optique de caractères (OCR) pour extraire l'adresse du destinataire.
-*   **Validation** : vérifie la cohérence des numéros de suivi via le calcul des clés de contrôle (algorithmes Luhn et ISO).
+- **Scan intelligent** — Lecture des codes-barres 1D et DataMatrix (Smartdata) via CameraX + ML Kit, avec calcul et vérification de la clé ISO 7064
+- **OCR automatique** — Extraction de l'adresse destinataire directement depuis l'enveloppe
+- **Mode continu** — Enchaînement des scans sans retour au menu, pour traiter une tournée complète en quelques minutes
+- **Gestion multi-bureaux** — Configuration de plusieurs bureaux d'instance avec adresse, horaires et couleur AVP personnalisée
+- **Aperçu avant impression** — Visualisation fidèle de l'AVP généré, avec choix de l'orientation d'insertion (horizontale / verticale)
+- **Impression PDF** — Génération au format réglementaire avec calibration fine du décalage imprimante
+- **Historique des sessions** — Consultation et reprise des sessions précédentes
+- **Recherche** — Filtrage par numéro de suivi ou adresse
 
-### Gestion des sessions
-Les courriers scannés sont regroupés par sessions de travail.
-*   **Historique** : permet de consulter, reprendre ou supprimer les sessions précédentes.
-*   **Modification** : offre la possibilité de corriger manuellement les informations d'un courrier (numéro ou adresse) avant l'impression.
+## Captures d'écran
 
-### Impression des avis de passage
-L'application génère des documents PDF formatés pour être imprimés directement sur les avis de passage vierges officiels.
-*   **Mise en page précise** : positionne rigoureusement les informations dans les zones réservées (numéro de suivi, adresse destinataire, bureau d'instance).
-*   **Calibration** : dispose d'un module de réglage permettant de définir un décalage horizontal et vertical pour compenser les marges spécifiques de chaque imprimante.
-*   **Gestion des débordements** : adapte automatiquement la taille du texte pour le numéro de suivi et tronque intelligemment l'adresse si elle dépasse la zone d'impression.
-*   **Transparence** : applique une transparence au fond coloré du bureau d'instance pour améliorer la lisibilité et tolérer les légers décalages d'impression.
+<p align="center">
+  <img src="screenshots/home.png" width="200" alt="Écran principal"/>
+  &nbsp;&nbsp;
+  <img src="screenshots/preview.png" width="200" alt="Aperçu avant impression"/>
+  &nbsp;&nbsp;
+  <img src="screenshots/print.png" width="200" alt="Impression"/>
+</p>
 
-### Gestion des bureaux d'instance
-L'utilisateur peut configurer plusieurs bureaux de poste où les courriers seront mis en instance.
-*   **Personnalisation** : chaque bureau est défini par son nom, son adresse, ses horaires et une couleur distinctive qui sera imprimée en fond sur l'avis.
+<p align="center">
+  <img src="screenshots/settings.png" width="200" alt="Paramètres"/>
+  &nbsp;&nbsp;
+  <img src="screenshots/liste instances.png" width="200" alt="Liste des bureaux"/>
+  &nbsp;&nbsp;
+  <img src="screenshots/instancesettings.png" width="200" alt="Configuration bureau"/>
+</p>
 
-## Architecture technique
+## Installation
 
-Le projet est développé en langage Kotlin et suit les recommandations modernes de développement Android.
+Téléchargez le fichier APK depuis la page [**Releases**](../../releases/latest) et installez-le sur votre appareil Android (version 9+).
 
-*   **Interface utilisateur** : réalisée avec Jetpack Compose (Material Design 3).
-*   **Architecture** : suit le modèle MVVM (Model-View-ViewModel) et les principes de la Clean Architecture.
-*   **Base de données** : utilise la bibliothèque Room pour la persistance locale des données.
-*   **Analyse d'image** : s'appuie sur CameraX et ML Kit pour la détection des codes-barres et la reconnaissance de texte.
-*   **Injection de dépendances** : gérée par Hilt.
+> L'installation depuis des sources externes doit être autorisée dans les paramètres de votre appareil.
 
-## Mécanisme de détection du bloc destinataire
+## Stack technique
 
-L'algorithme de détection d'adresse d'AutoAVP est conçu spécifiquement pour les standards industriels de La Poste (Offres CI Premium et Essentiel). Il repose sur une stratégie **"Ancrage & Zones d'Exclusion"** qui vise à isoler chirurgicalement le destinataire parmi les autres éléments textuels (Expéditeur, Logos, Mentions).
+| Composant | Technologie |
+|---|---|
+| UI | Jetpack Compose + Material 3 |
+| Architecture | MVVM, Hilt (DI) |
+| Base de données | Room |
+| Caméra | CameraX |
+| Reconnaissance | ML Kit (texte + codes-barres) |
+| Impression | Android Print Framework / PDF |
 
-Le processus se déroule en 4 étapes clés :
+## Compilation
 
-1.  **Zonage spatial (le "nettoyage")**
-    *   **Ancrage dynamique** : Si un DataMatrix (SmartData) est détecté, sa position définit une frontière verticale. Tout texte situé à sa droite (zone réservée aux logos Suivi/Recommandé et à l'affranchissement) est immédiatement ignoré.
-    *   **Exclusion statique** : Les zones normalisées "Indexation" (Haut 15%) et "Codage" (Bas 10%) sont exclues du traitement.
-    *   **Filtre expéditeur** : Le coin supérieur gauche de l'image est pénalisé pour éviter la capture de l'adresse retour.
+```bash
+git clone https://github.com/<user>/AutoAVP.git
+cd AutoAVP
+./gradlew assembleRelease
+```
 
-2.  **Identification du bloc principal (l'ancre)**
-    *   L'algorithme scanne les blocs de texte restants à la recherche d'une structure **"code postal + ville"** valide (Regex : 5 chiffres suivis de lettres majuscules).
-    *   Le bloc contenant cette structure est élu "candidat principal" (ancre).
+> Requiert le SDK Android 36 et JDK 17.
 
-3.  **Recousage vertical (Le "stitching")**
-    *   ML Kit fragmente souvent le texte en paragraphes distincts (ex: Nom séparé de la rue).
-    *   L'algorithme recherche géométriquement un bloc "orphelin" situé **juste au-dessus** de l'ancre.
-    *   Si ce bloc est aligné (gauche/centre), proche verticalement, et présente une **cohérence typographique** (hauteur de ligne similaire +/- 25%), il est fusionné avec l'adresse. Cela permet de récupérer le Nom du destinataire même s'il est visuellement détaché.
+## Licence
 
-4.  **Stabilisation temporelle (Le "Debounce")**
-    *   L'application n'enregistre pas le résultat instantanément. Elle attend une stabilisation de **500ms**.
-    *   Si une meilleure lecture (avec plus de lignes d'adresse) survient pendant ce délai, le chronomètre est réinitialisé. Cela garantit que l'autofocus a le temps de rendre nettes les lignes fines (comme le nom) avant la validation.
-
-## Utilisation
-
-1.  **Configuration** : définir au moins un bureau d'instance dans le menu dédié. Si nécessaire, calibrer l'imprimante via les paramètres.
-2.  **Scan** : lancer une nouvelle session de scan. Viser le courrier pour détecter automatiquement le numéro de suivi et l'adresse.
-3.  **Vérification** : contrôler la liste des courriers scannés sur l'écran d'accueil.
-4.  **Impression** : connecter l'imprimante, sélectionner le bureau d'instance souhaité et lancer l'impression. Le document PDF généré respecte le format A4 pour garantir le respect des dimensions lors de l'impression.
-
-## Mentions légales
-
-Projet personnel développé avec l'aide de Google Gemini. Tous droits réservés.
+Ce projet est distribué sous licence [MIT](LICENSE).

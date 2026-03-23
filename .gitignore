@@ -2,6 +2,7 @@
 *.iml
 .gradle
 **/build
+app/release
 
 # Local config
 local.properties
@@ -26,3 +27,4 @@ local.properties
 project.md
 history.md
 GEMINI.md
+initial-project.md
