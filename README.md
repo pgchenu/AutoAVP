@@ -67,7 +67,7 @@ Téléchargez le fichier APK depuis la page [**Releases**](../../releases/latest
 ## Compilation
 
 ```bash
-git clone https://github.com/<user>/AutoAVP.git
+git clone https://github.com/pgchenu/AutoAVP.git
 cd AutoAVP
 ./gradlew assembleRelease
 ```
