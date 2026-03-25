@@ -95,9 +95,11 @@ object AddressParser {
             val avgH = primaryAvgHeight.toDouble()
 
             // Proximité Verticale (Plus c'est proche, mieux c'est)
-            if (gapD in 0.0..avgH) score += 50
-            else if (gapD < 0) score += 30 // Chevauchement : bon signe de continuité
-            else score += 20 // Un peu d'écart
+            score += when {
+                gapD in 0.0..avgH -> 50
+                gapD < 0 -> 30 // Chevauchement : bon signe de continuité
+                else -> 20 // Un peu d'écart
+            }
 
             // Alignement Horizontal (Gauche strict = bonus)
             if (abs(otherBox.left - primaryBox.left) < 50) score += 40
@@ -111,9 +113,11 @@ object AddressParser {
             val otherAvgHeight = otherBox.height().toFloat() / otherLineCount
             val ratio = otherAvgHeight / primaryAvgHeight
             
-            if (ratio in 0.8..1.2) score += 30
-            else if (ratio in 0.6..1.5) score += 10
-            else score -= 20 // Police très différente
+            score += when (ratio) {
+                in 0.8..1.2 -> 30
+                in 0.6..1.5 -> 10
+                else -> -20 // Police très différente
+            }
 
             // Pénalités
             if (FORBIDDEN_KEYWORDS.any { textUpper.contains(it) }) score -= 1000
@@ -171,11 +175,12 @@ object AddressParser {
         val cpRegex = Regex("(?<!\\d)\\d{5}(?!\\d)") 
         val anchor = lines.indexOfLast { cpRegex.containsMatchIn(it) }
         
-        if (anchor != -1) {
+        val raw = if (anchor != -1) {
             val start = (anchor - 5).coerceAtLeast(0)
-            val raw = lines.subList(start, anchor + 1).joinToString("\n")
-            return OcrPostProcessor.correctAddress(raw)
+            lines.subList(start, anchor + 1).joinToString("\n")
+        } else {
+            text.takeIf { it.isNotEmpty() }
         }
-        return text.takeIf { it.isNotEmpty() }?.let { OcrPostProcessor.correctAddress(it) }
+        return raw?.let { OcrPostProcessor.correctAddress(it) }
     }
 }

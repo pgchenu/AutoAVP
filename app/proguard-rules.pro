@@ -20,20 +20,19 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
-# Room
--keep class * extends androidx.room.RoomDatabase
--keep @androidx.room.Entity class *
--dontwarn androidx.room.**
+# Room – keep only the concrete database class and annotated entities
+-keep class com.example.autoavp.data.local.AutoAvpDatabase { *; }
+-keep @androidx.room.Entity class * { *; }
+-keep @androidx.room.Dao interface * { *; }
 
-# Hilt
--keep class dagger.hilt.** { *; }
--keep class javax.inject.** { *; }
--keep @dagger.hilt.android.lifecycle.HiltViewModel class * { *; }
+# Hilt – the library ships its own consumer proguard rules.
+# Only keep app-side annotated ViewModels so Hilt can instantiate them.
+-keep @dagger.hilt.android.lifecycle.HiltViewModel class * { <init>(...); }
 
-# ML Kit
--keep class com.google.mlkit.** { *; }
+# ML Kit – the library ships its own consumer proguard rules.
+# Keep only the public result model classes used via reflection for barcode/text.
+-keep class com.google.mlkit.vision.text.Text { *; }
+-keep class com.google.mlkit.vision.text.Text$* { *; }
+-keep class com.google.mlkit.vision.barcode.common.Barcode { *; }
+-keep class com.google.mlkit.vision.barcode.common.Barcode$* { *; }
 -dontwarn com.google.mlkit.**
-
-# Keep data classes used in the app
--keep class com.example.autoavp.data.local.entities.** { *; }
--keep class com.example.autoavp.domain.model.** { *; }

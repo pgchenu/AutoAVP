@@ -1,3 +1,5 @@
+@file:Suppress("KotlinConstantConditions")
+
 package com.example.autoavp.ui.scan
 
 import android.Manifest
@@ -154,7 +156,7 @@ fun ScanScreen(
                             
                             val preview = Preview.Builder()
                                 .build().also {
-                                    it.setSurfaceProvider(this.surfaceProvider)
+                                    it.surfaceProvider = this.surfaceProvider
                                 }
 
                             // Résolution 1080p
@@ -337,12 +339,11 @@ fun ScanScreen(
                             object : ImageCapture.OnImageCapturedCallback() {
                                 @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
                                 override fun onCaptureSuccess(imageProxy: ImageProxy) {
-                                    val rotation = imageProxy.imageInfo.rotationDegrees
                                     val mediaImage = imageProxy.image
                                     if (mediaImage != null) {
+                                        val rotation = imageProxy.imageInfo.rotationDegrees
                                         // Sauvegarde de l'image manuelle
-                                        var imagePath: String? = null
-                                        try {
+                                        val imagePath: String? = try {
                                             val bitmap = imageProxy.toBitmap()
                                             val matrix = android.graphics.Matrix()
                                             matrix.postRotate(rotation.toFloat())
@@ -356,9 +357,10 @@ fun ScanScreen(
                                                 bitmap.recycle()
                                             }
                                             finalBitmap.recycle()
-                                            imagePath = file.absolutePath
+                                            file.absolutePath
                                         } catch (e: Exception) {
                                             Log.e("ScanScreen", "Failed to save manual image", e)
+                                            null
                                         }
 
                                         val inputImage = InputImage.fromMediaImage(mediaImage, rotation)

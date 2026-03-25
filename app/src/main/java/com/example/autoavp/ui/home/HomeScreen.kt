@@ -1,3 +1,5 @@
+@file:Suppress("KotlinConstantConditions")
+
 package com.example.autoavp.ui.home
 
 import androidx.compose.animation.AnimatedVisibility
@@ -55,20 +57,20 @@ fun HomeScreen(
     }
 
     // Observation des résultats de scan pour la mise à jour
-    val currentBackStackEntry = navController.currentBackStackEntry
-    val savedStateHandle = currentBackStackEntry?.savedStateHandle
-    
+    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+
     // On utilise une approche plus robuste pour les résultats de scan
     val scannedTracking by (savedStateHandle?.getStateFlow<String?>("scanned_tracking", null) ?: remember { MutableStateFlow(null) }).collectAsState()
     val scannedAddress by (savedStateHandle?.getStateFlow<String?>("scanned_address", null) ?: remember { MutableStateFlow(null) }).collectAsState()
-    val scannedImagePath by (savedStateHandle?.getStateFlow<String?>("scanned_image_path", null) ?: remember { MutableStateFlow(null) }).collectAsState()
-    val scannedStatus by (savedStateHandle?.getStateFlow<String?>("scanned_status", null) ?: remember { MutableStateFlow(null) }).collectAsState()
-    val scannedIso by (savedStateHandle?.getStateFlow<String?>("scanned_iso", null) ?: remember { MutableStateFlow(null) }).collectAsState()
-    val scannedOcr by (savedStateHandle?.getStateFlow<String?>("scanned_ocr", null) ?: remember { MutableStateFlow(null) }).collectAsState()
 
     LaunchedEffect(scannedTracking, scannedAddress) {
         if (itemToEdit != null && (scannedTracking != null || scannedAddress != null)) {
             val base = itemToEdit!!
+            // Lecture directe depuis le savedStateHandle (pas besoin de collectAsState)
+            val scannedImagePath = savedStateHandle?.get<String>("scanned_image_path")
+            val scannedStatus = savedStateHandle?.get<String>("scanned_status")
+            val scannedIso = savedStateHandle?.get<String>("scanned_iso")
+            val scannedOcr = savedStateHandle?.get<String>("scanned_ocr")
             // On met à jour l'item en mémoire
             itemToEdit = base.copy(
                 trackingNumber = scannedTracking ?: base.trackingNumber,
@@ -123,101 +125,49 @@ fun HomeScreen(
             )
         },
         bottomBar = {
-            Box {
-                BottomAppBar(
-                    actions = {
-                        if (isSearching) {
-                            OutlinedTextField(
-                                value = searchQuery,
-                                onValueChange = { searchQuery = it },
-                                placeholder = { Text("N° objet ou destinataire…") },
-                                singleLine = true,
-                                modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
-                                trailingIcon = {
-                                    IconButton(onClick = { searchQuery = ""; isSearching = false }) {
-                                        Icon(Icons.Default.Close, contentDescription = "Fermer")
-                                    }
-                                }
-                            )
-                        } else {
-                            IconButton(onClick = { isSearching = true }) {
-                                Icon(Icons.Default.Search, contentDescription = "Rechercher")
-                            }
-                            if (items.isNotEmpty()) {
-                                TextButton(onClick = { showNewSessionDialog = true }) {
-                                    Text("Nouvelle session", color = MaterialTheme.colorScheme.primary)
+            BottomAppBar(
+                actions = {
+                    if (isSearching) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            placeholder = { Text("N° objet ou destinataire…") },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                            trailingIcon = {
+                                IconButton(onClick = { searchQuery = ""; isSearching = false }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Fermer")
                                 }
                             }
-                            Spacer(Modifier.weight(1f))
+                        )
+                    } else {
+                        IconButton(onClick = { isSearching = true }) {
+                            Icon(Icons.Default.Search, contentDescription = "Rechercher")
                         }
-                    },
-                    floatingActionButton = {
-                        FloatingActionButton(
-                            onClick = { showFabMenu = !showFabMenu },
-                            containerColor = MaterialTheme.colorScheme.primary
-                        ) {
-                            Icon(
-                                if (showFabMenu) Icons.Default.Close else Icons.Default.Add,
-                                contentDescription = "Ajouter"
-                            )
+                        if (items.isNotEmpty()) {
+                            TextButton(onClick = { showNewSessionDialog = true }) {
+                                Text("Nouvelle session", color = MaterialTheme.colorScheme.primary)
+                            }
                         }
+                        Spacer(Modifier.weight(1f))
                     }
-                )
-                // Menu FAB qui s'ouvre au-dessus de la barre
-                AnimatedVisibility(
-                    visible = showFabMenu,
-                    enter = expandVertically(),
-                    exit = shrinkVertically(),
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(end = 16.dp, bottom = 80.dp)
-                ) {
-                    Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SmallFloatingActionButton(
-                            onClick = {
-                                showFabMenu = false
-                                showManualAddDialog = true
-                            },
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        ) {
-                            Row(modifier = Modifier.padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Edit, contentDescription = null)
-                                Spacer(Modifier.width(8.dp))
-                                Text("Ajout manuel")
-                            }
-                        }
-                        SmallFloatingActionButton(
-                            onClick = {
-                                showFabMenu = false
-                                navController.navigate(Screen.Scan.createRoute(Screen.Scan.MODE_BULK))
-                            },
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        ) {
-                            Row(modifier = Modifier.padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.PhotoCamera, contentDescription = null)
-                                Spacer(Modifier.width(8.dp))
-                                Text("Scan multiple")
-                            }
-                        }
-                        SmallFloatingActionButton(
-                            onClick = {
-                                showFabMenu = false
-                                navController.navigate(Screen.Scan.createRoute(Screen.Scan.MODE_SINGLE))
-                            },
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        ) {
-                            Row(modifier = Modifier.padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.CenterFocusStrong, contentDescription = null)
-                                Spacer(Modifier.width(8.dp))
-                                Text("Scan unique")
-                            }
-                        }
+                },
+                floatingActionButton = {
+                    FloatingActionButton(
+                        onClick = { showFabMenu = !showFabMenu },
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Icon(
+                            if (showFabMenu) Icons.Default.Close else Icons.Default.Add,
+                            contentDescription = "Ajouter"
+                        )
                     }
                 }
-            }
+            )
         }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            Column {
             // Office Selector (Same as SessionDetails)
             if (offices.isEmpty()) {
                 Text(
@@ -274,6 +224,58 @@ fun HomeScreen(
                             onEdit = { itemToEdit = item },
                             onDelete = { viewModel.deleteItem(item) }
                         )
+                    }
+                }
+            }
+            }
+            // Menu FAB qui s'ouvre au-dessus de la barre
+            AnimatedVisibility(
+                visible = showFabMenu,
+                enter = expandVertically(expandFrom = Alignment.Bottom),
+                exit = shrinkVertically(shrinkTowards = Alignment.Bottom),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 16.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SmallFloatingActionButton(
+                        onClick = {
+                            showFabMenu = false
+                            showManualAddDialog = true
+                        },
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ) {
+                        Row(modifier = Modifier.padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Edit, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Ajout manuel")
+                        }
+                    }
+                    SmallFloatingActionButton(
+                        onClick = {
+                            showFabMenu = false
+                            navController.navigate(Screen.Scan.createRoute(Screen.Scan.MODE_BULK))
+                        },
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ) {
+                        Row(modifier = Modifier.padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.PhotoCamera, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Scan multiple")
+                        }
+                    }
+                    SmallFloatingActionButton(
+                        onClick = {
+                            showFabMenu = false
+                            navController.navigate(Screen.Scan.createRoute(Screen.Scan.MODE_SINGLE))
+                        },
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ) {
+                        Row(modifier = Modifier.padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.CenterFocusStrong, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Scan unique")
+                        }
                     }
                 }
             }

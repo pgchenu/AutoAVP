@@ -3,6 +3,7 @@ package com.example.autoavp.ui.scan
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import androidx.core.graphics.createBitmap
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Matrix
@@ -145,7 +146,7 @@ class AutoAvpAnalyzer @Inject constructor(
         val target = if (eb != null && eb.width == bitmap.width && eb.height == bitmap.height) {
             eb
         } else {
-            Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888).also {
+            createBitmap(bitmap.width, bitmap.height).also {
                 enhancedBitmap = it
             }
         }
@@ -244,14 +245,8 @@ class AutoAvpAnalyzer @Inject constructor(
         // 4. Extraction de l'Adresse : Stratégie "Ancrage & Zones d'Exclusion"
 
         // A. Définition de l'Ancre (SmartData)
-        val smartDataBox = smartData?.boundingBox
-        val anchorRightLimit = if (smartDataBox != null) {
-            // Tout ce qui est à droite du BORD GAUCHE de la SmartData est exclu (Logos, Affranchissement)
-            smartDataBox.left.toFloat()
-        } else {
-            // Fallback : On exclut le tiers droit de l'image (zone timbre standard)
-            imageWidth * 0.66f
-        }
+        val anchorRightLimit = smartData?.boundingBox?.left?.toFloat()
+            ?: (imageWidth * 0.66f) // Fallback : On exclut le tiers droit de l'image (zone timbre standard)
 
         // B. Zones d'Exclusion La Poste (Normalisées par rapport à la hauteur image)
         // Zone Indexation (Haut) : ~15% (40mm sur ~220mm)

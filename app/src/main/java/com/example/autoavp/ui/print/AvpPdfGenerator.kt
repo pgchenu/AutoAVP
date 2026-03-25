@@ -2,6 +2,7 @@ package com.example.autoavp.ui.print
 
 import android.content.Context
 import android.graphics.pdf.PdfDocument
+import androidx.core.graphics.withTranslation
 import android.print.PrintAttributes
 import android.print.PrintDocumentAdapter
 import android.print.PrintManager
@@ -61,18 +62,16 @@ class AvpPdfGenerator(private val context: Context) {
                     val canvas = page.canvas
 
                     if (orientation == PrintOrientation.VERTICAL) {
-                        canvas.save()
-                        canvas.translate(PrintUtils.mmToPoints(calibrationX), PrintUtils.mmToPoints(calibrationY))
-                        val centeringMarginMm = (a4WidthMm - avpHeightMm) / 2f
-                        canvas.translate(PrintUtils.mmToPoints(centeringMarginMm + avpHeightMm), 0f)
-                        canvas.rotate(90f)
-                        AvpRenderer.drawOnCanvas(canvas, item, office)
-                        canvas.restore()
+                        canvas.withTranslation(PrintUtils.mmToPoints(calibrationX), PrintUtils.mmToPoints(calibrationY)) {
+                            val centeringMarginMm = (a4WidthMm - avpHeightMm) / 2f
+                            translate(PrintUtils.mmToPoints(centeringMarginMm + avpHeightMm), 0f)
+                            rotate(90f)
+                            AvpRenderer.drawOnCanvas(this, item, office)
+                        }
                     } else {
-                        canvas.save()
-                        canvas.translate(PrintUtils.mmToPoints(calibrationX), PrintUtils.mmToPoints(calibrationY))
-                        AvpRenderer.drawOnCanvas(canvas, item, office)
-                        canvas.restore()
+                        canvas.withTranslation(PrintUtils.mmToPoints(calibrationX), PrintUtils.mmToPoints(calibrationY)) {
+                            AvpRenderer.drawOnCanvas(this, item, office)
+                        }
                     }
 
                     pdfDocument.finishPage(page)

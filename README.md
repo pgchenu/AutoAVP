@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="app/src/main/res/drawable/ic_launcher_foreground.xml" width="100" alt="AutoAVP logo"/>
+  <img src="app/src/main/ic_launcher-playstore.png" width="120" alt="AutoAVP logo"/>
 </p>
 
 <h1 align="center">AutoAVP</h1>
@@ -67,7 +67,7 @@ Téléchargez le fichier APK depuis la page [**Releases**](../../releases/latest
 ## Compilation
 
 ```bash
-git clone https://github.com/pgchenu/AutoAVP.git
+git clone https://github.com/<user>/AutoAVP.git
 cd AutoAVP
 ./gradlew assembleRelease
 ```

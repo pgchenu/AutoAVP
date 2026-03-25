@@ -39,7 +39,7 @@ class ScanViewModel @Inject constructor(
     private val _detectedBlocks = MutableStateFlow<List<android.graphics.RectF>>(emptyList())
     val detectedBlocks: StateFlow<List<android.graphics.RectF>> = _detectedBlocks.asStateFlow()
 
-    private val _sourceImageSize = MutableStateFlow<Pair<Int, Int>>(0 to 0)
+    private val _sourceImageSize = MutableStateFlow(0 to 0)
     val sourceImageSize: StateFlow<Pair<Int, Int>> = _sourceImageSize.asStateFlow()
 
     private val _currentSessionId = MutableStateFlow<Long?>(null)
@@ -61,7 +61,7 @@ class ScanViewModel @Inject constructor(
 
     // --- VOTE MULTI-FRAMES ---
     private val addressHistory = mutableListOf<String>()
-    private val ADDRESS_HISTORY_SIZE = 5
+    private val addressHistorySize = 5
     private var lastTrackingForHistory: String? = null
 
     private var scanMode: String = "bulk"
@@ -130,7 +130,7 @@ class ScanViewModel @Inject constructor(
         val frameAddress = newData.rawText
         if (!frameAddress.isNullOrBlank()) {
             addressHistory.add(frameAddress)
-            if (addressHistory.size > ADDRESS_HISTORY_SIZE) {
+            if (addressHistory.size > addressHistorySize) {
                 addressHistory.removeAt(0)
             }
         }
@@ -199,11 +199,10 @@ class ScanViewModel @Inject constructor(
         val oKey = new.ocrKey ?: old.ocrKey
         
         // Recalcul du statut global après fusion
-        var status = ValidationStatus.CALCULATED
-        if (oKey != null && oKey == iKey) {
-            status = ValidationStatus.VERIFIED
-        } else if (oKey != null) {
-            status = ValidationStatus.WARNING
+        val status = when {
+            oKey != null && oKey == iKey -> ValidationStatus.VERIFIED
+            oKey != null -> ValidationStatus.WARNING
+            else -> ValidationStatus.CALCULATED
         }
 
         return old.copy(

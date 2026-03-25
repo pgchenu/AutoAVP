@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.core.graphics.withSave
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -145,10 +146,9 @@ fun AvpVisualPreview(item: MailItemEntity, office: InstanceOfficeEntity, calibX:
             val ratioX = canvasWidth / 595f
             val ratioY = canvasHeight / 281f
 
-            drawContext.canvas.nativeCanvas.apply {
-                save()
+            drawContext.canvas.nativeCanvas.withSave {
                 translate(PrintUtils.mmToPoints(calibX) * ratioX, PrintUtils.mmToPoints(calibY) * ratioY)
-                
+
                 // Pour l'aperçu, on applique une mise à l'échelle supplémentaire car le renderer travaille en points PDF (72dpi)
                 // alors que l'écran a sa propre densité.
                 // AvpRenderer dessine sur ~600x280 points.
@@ -157,8 +157,6 @@ fun AvpVisualPreview(item: MailItemEntity, office: InstanceOfficeEntity, calibX:
                 scale(ratioX, ratioX) // On garde le ratio d'aspect constant
 
                 AvpRenderer.drawOnCanvas(this, item, office)
-
-                restore()
             }
         }
     }

@@ -3,6 +3,7 @@ package com.example.autoavp.ui.print
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import androidx.core.graphics.toColorInt
 import android.graphics.Typeface
 import com.example.autoavp.data.local.entities.InstanceOfficeEntity
 import com.example.autoavp.data.local.entities.MailItemEntity
@@ -72,7 +73,7 @@ object AvpRenderer {
         val instH = PrintUtils.mmToPoints(PrintConfig.INSTANCE_BOX_H)
 
         val bgPaint = Paint().apply {
-            color = try { Color.parseColor(office.colorHex) } catch (e: Exception) { Color.parseColor("#FFCE00") }
+            color = try { office.colorHex.toColorInt() } catch (e: Exception) { "#FFCE00".toColorInt() }
             alpha = 100 // ~40% opacité
             style = Paint.Style.FILL
         }

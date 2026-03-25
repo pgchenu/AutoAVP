@@ -19,4 +19,5 @@ sealed class Screen(val route: String) {
         fun createRoute(sessionId: Long, officeId: Long) = "print_preview/$sessionId/$officeId"
     }
     object Settings : Screen("settings")
+    object Welcome : Screen("welcome")
 }

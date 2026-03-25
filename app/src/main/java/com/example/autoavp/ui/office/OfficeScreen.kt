@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColorInt
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.autoavp.data.local.entities.InstanceOfficeEntity
@@ -96,7 +97,7 @@ fun OfficeCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val color = try { Color(android.graphics.Color.parseColor(office.colorHex)) } catch (e: Exception) { Color.Gray }
+    val color = try { Color(office.colorHex.toColorInt()) } catch (e: Exception) { Color.Gray }
 
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -188,7 +189,7 @@ fun OfficeEditDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    val currentColor = try { Color(android.graphics.Color.parseColor(colorHex)) } catch (e: Exception) { Color.Gray }
+                    val currentColor = try { Color(colorHex.toColorInt()) } catch (e: Exception) { Color.Gray }
                     Box(
                         modifier = Modifier
                             .size(32.dp)
@@ -207,7 +208,7 @@ fun OfficeEditDialog(
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     items(presetColors) { hex ->
-                        val c = try { Color(android.graphics.Color.parseColor(hex)) } catch (e: Exception) { Color.Gray }
+                        val c = try { Color(hex.toColorInt()) } catch (e: Exception) { Color.Gray }
                         Box(
                             modifier = Modifier
                                 .size(36.dp)
@@ -269,7 +270,7 @@ fun HsvColorPicker(
     // Initialiser depuis la couleur courante
     LaunchedEffect(currentHex) {
         try {
-            val rgb = android.graphics.Color.parseColor(currentHex)
+            val rgb = currentHex.toColorInt()
             val hsv = FloatArray(3)
             android.graphics.Color.colorToHSV(rgb, hsv)
             hue = hsv[0]
@@ -355,7 +356,7 @@ fun HsvColorPicker(
                 if (sanitized.matches(Regex("#[0-9A-Fa-f]{6}"))) {
                     onColorSelected(sanitized.uppercase())
                     try {
-                        val rgb = android.graphics.Color.parseColor(sanitized)
+                        val rgb = sanitized.toColorInt()
                         val hsv = FloatArray(3)
                         android.graphics.Color.colorToHSV(rgb, hsv)
                         hue = hsv[0]

@@ -13,7 +13,7 @@ android {
     defaultConfig {
         applicationId = "com.example.autoavp"
         minSdk = 28
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "0.2.1"
 
