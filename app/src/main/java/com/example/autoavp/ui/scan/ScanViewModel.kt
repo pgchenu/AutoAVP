@@ -3,7 +3,6 @@ package com.example.autoavp.ui.scan
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.autoavp.data.repository.ScanRepository
-import com.example.autoavp.data.repository.SettingsRepository
 import com.example.autoavp.domain.model.ScannedData
 import com.example.autoavp.domain.model.TrackingType
 import com.example.autoavp.domain.model.ValidationStatus
@@ -26,8 +25,7 @@ import kotlinx.coroutines.flow.SharingStarted
 
 @HiltViewModel
 class ScanViewModel @Inject constructor(
-    private val scanRepository: ScanRepository,
-    private val settingsRepository: SettingsRepository
+    private val scanRepository: ScanRepository
 ) : ViewModel() {
 
     private val _scanState = MutableStateFlow<ScanUiState>(ScanUiState.Initializing)
@@ -63,6 +61,8 @@ class ScanViewModel @Inject constructor(
     private val addressHistory = mutableListOf<String>()
     private val addressHistorySize = 5
     private var lastTrackingForHistory: String? = null
+
+    private val hasEmittedResult = java.util.concurrent.atomic.AtomicBoolean(false)
 
     private var scanMode: String = "bulk"
 
@@ -278,8 +278,8 @@ class ScanViewModel @Inject constructor(
             scanMode == Screen.Scan.MODE_RETURN_ADDRESS || 
             scanMode == Screen.Scan.MODE_RETURN_ALL) {
             
-            // Sécurité : Si on a déjà fini ou réussi, on ignore
-            if (_scanState.value is ScanUiState.Success || _scanState.value is ScanUiState.Finished) return
+            // Sécurité : Garantir une seule émission via AtomicBoolean (thread-safe)
+            if (!hasEmittedResult.compareAndSet(false, true)) return
 
             viewModelScope.launch {
                 _scanState.value = ScanUiState.Success(data)
@@ -307,20 +307,13 @@ class ScanViewModel @Inject constructor(
             _scanState.value = ScanUiState.Success(data)
             _accumulationStatus.value = AccumulationStatus() // RESET HUD
 
-            val isContinuous = settingsRepository.continuousScan.first()
-
             if (scanMode == Screen.Scan.MODE_SINGLE) {
                 delay(1000)
                 _scanState.value = ScanUiState.Finished
             } else {
-                // Mode Bulk (ou défaut)
-                if (isContinuous) {
-                    delay(1500)
-                    _scanState.value = ScanUiState.Scanning
-                } else {
-                    delay(1000)
-                    _scanState.value = ScanUiState.Finished
-                }
+                // Mode Bulk : enchaîner automatiquement
+                delay(1500)
+                _scanState.value = ScanUiState.Scanning
             }
         }
     }

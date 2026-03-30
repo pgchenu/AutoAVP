@@ -24,9 +24,6 @@ class SettingsRepository @Inject constructor(
     private val _calibrationY = MutableStateFlow(prefs.getFloat(KEY_CALIB_Y, 0f))
     val calibrationY: StateFlow<Float> = _calibrationY.asStateFlow()
 
-    private val _continuousScan = MutableStateFlow(prefs.getBoolean(KEY_CONTINUOUS_SCAN, true))
-    val continuousScan: StateFlow<Boolean> = _continuousScan.asStateFlow()
-
     private val _autoDetection = MutableStateFlow(prefs.getBoolean(KEY_AUTO_DETECTION, true))
     val autoDetection: StateFlow<Boolean> = _autoDetection.asStateFlow()
 
@@ -44,11 +41,6 @@ class SettingsRepository @Inject constructor(
     suspend fun setCalibrationY(value: Float) = withContext(Dispatchers.IO) {
         prefs.edit { putFloat(KEY_CALIB_Y, value) }
         _calibrationY.value = value
-    }
-
-    suspend fun setContinuousScan(value: Boolean) = withContext(Dispatchers.IO) {
-        prefs.edit { putBoolean(KEY_CONTINUOUS_SCAN, value) }
-        _continuousScan.value = value
     }
 
     suspend fun setAutoDetection(value: Boolean) = withContext(Dispatchers.IO) {
@@ -69,7 +61,6 @@ class SettingsRepository @Inject constructor(
     companion object {
         private const val KEY_CALIB_X = "calibration_x"
         private const val KEY_CALIB_Y = "calibration_y"
-        private const val KEY_CONTINUOUS_SCAN = "continuous_scan"
         private const val KEY_AUTO_DETECTION = "auto_detection"
         private const val KEY_SELECTED_OFFICE = "selected_office_id"
         private const val KEY_HAS_SEEN_WELCOME = "has_seen_welcome"

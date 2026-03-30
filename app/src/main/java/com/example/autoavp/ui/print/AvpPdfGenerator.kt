@@ -22,8 +22,9 @@ class AvpPdfGenerator(private val context: Context) {
 
     fun printSession(
         items: List<MailItemEntity>,
-        office: InstanceOfficeEntity,
+        office: InstanceOfficeEntity?,
         orientation: PrintOrientation = PrintOrientation.HORIZONTAL,
+        reversed: Boolean = false,
         calibrationX: Float = 0f,
         calibrationY: Float = 0f
     ) {
@@ -61,16 +62,32 @@ class AvpPdfGenerator(private val context: Context) {
                     val page = pdfDocument.startPage(pageInfo)
                     val canvas = page.canvas
 
-                    if (orientation == PrintOrientation.VERTICAL) {
-                        canvas.withTranslation(PrintUtils.mmToPoints(calibrationX), PrintUtils.mmToPoints(calibrationY)) {
-                            val centeringMarginMm = (a4WidthMm - avpHeightMm) / 2f
-                            translate(PrintUtils.mmToPoints(centeringMarginMm + avpHeightMm), 0f)
-                            rotate(90f)
-                            AvpRenderer.drawOnCanvas(this, item, office)
-                        }
-                    } else {
-                        canvas.withTranslation(PrintUtils.mmToPoints(calibrationX), PrintUtils.mmToPoints(calibrationY)) {
-                            AvpRenderer.drawOnCanvas(this, item, office)
+                    canvas.withTranslation(PrintUtils.mmToPoints(calibrationX), PrintUtils.mmToPoints(calibrationY)) {
+                        val centeringMarginMm = (a4WidthMm - avpHeightMm) / 2f
+
+                        when {
+                            orientation == PrintOrientation.HORIZONTAL && !reversed -> {
+                                // Pas de rotation
+                                AvpRenderer.drawOnCanvas(this, item, office)
+                            }
+                            orientation == PrintOrientation.HORIZONTAL && reversed -> {
+                                // Rotation 180° autour du centre de l'AVP
+                                translate(PrintUtils.mmToPoints(a4WidthMm), PrintUtils.mmToPoints(avpHeightMm))
+                                rotate(180f)
+                                AvpRenderer.drawOnCanvas(this, item, office)
+                            }
+                            orientation == PrintOrientation.VERTICAL && !reversed -> {
+                                // Rotation 90° avec centrage
+                                translate(PrintUtils.mmToPoints(centeringMarginMm + avpHeightMm), 0f)
+                                rotate(90f)
+                                AvpRenderer.drawOnCanvas(this, item, office)
+                            }
+                            orientation == PrintOrientation.VERTICAL && reversed -> {
+                                // Rotation 270° avec centrage
+                                translate(PrintUtils.mmToPoints(centeringMarginMm), PrintUtils.mmToPoints(a4WidthMm))
+                                rotate(270f)
+                                AvpRenderer.drawOnCanvas(this, item, office)
+                            }
                         }
                     }
 
@@ -81,9 +98,10 @@ class AvpPdfGenerator(private val context: Context) {
                     pdfDocument.writeTo(FileOutputStream(destination?.fileDescriptor))
                 } catch (e: IOException) {
                     callback?.onWriteFailed(e.toString())
-                } finally {
                     pdfDocument.close()
+                    return
                 }
+                pdfDocument.close()
                 callback?.onWriteFinished(arrayOf(android.print.PageRange.ALL_PAGES))
             }
         }, null)

@@ -68,11 +68,19 @@ fun WelcomeScreen(onFinish: () -> Unit) {
         Spacer(Modifier.height(48.dp))
 
         // Logo
-        Image(
-            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-            contentDescription = "AutoAVP",
-            modifier = Modifier.size(100.dp)
-        )
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFF5C400)),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                contentDescription = "AutoAVP",
+                modifier = Modifier.size(100.dp)
+            )
+        }
 
         Spacer(Modifier.height(8.dp))
 

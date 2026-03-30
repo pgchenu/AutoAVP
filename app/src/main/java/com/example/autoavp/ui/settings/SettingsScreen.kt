@@ -21,7 +21,6 @@ fun SettingsScreen(
 ) {
     val calibX by viewModel.calibrationX.collectAsState()
     val calibY by viewModel.calibrationY.collectAsState()
-    val continuousScan by viewModel.continuousScan.collectAsState()
     val autoDetection by viewModel.autoDetection.collectAsState()
 
     Scaffold(
@@ -56,28 +55,6 @@ fun SettingsScreen(
                     Text("Général", style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(8.dp))
                     
-                    // Flashage continu
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Flashage continu", style = MaterialTheme.typography.bodyLarge)
-                            Text(
-                                "Enchaîner les scans sans revenir au menu.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Switch(
-                            checked = continuousScan,
-                            onCheckedChange = viewModel::toggleContinuousScan
-                        )
-                    }
-
-                    Spacer(Modifier.height(16.dp))
-
                     // Déclenchement automatique
                     Row(
                         modifier = Modifier.fillMaxWidth(),

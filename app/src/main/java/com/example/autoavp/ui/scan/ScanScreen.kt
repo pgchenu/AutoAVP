@@ -52,6 +52,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -106,6 +107,10 @@ fun ScanScreen(
         EntryPointAccessors.fromApplication(context, ScanEntryPoint::class.java).getAnalyzer()
     }
 
+    DisposableEffect(analyzer) {
+        onDispose { analyzer.close() }
+    }
+
     var hasCameraPermission by remember { mutableStateOf(false) }
     var isFlashEnabled by remember { mutableStateOf(false) }
     var cameraControl by remember { mutableStateOf<androidx.camera.core.CameraControl?>(null) }
@@ -116,6 +121,12 @@ fun ScanScreen(
     
     // Pour le Tap-to-focus
     var previewViewForFocus by remember { mutableStateOf<PreviewView?>(null) }
+
+    // Executor for image analysis
+    val analysisExecutor = remember { Executors.newSingleThreadExecutor() }
+    DisposableEffect(Unit) {
+        onDispose { analysisExecutor.shutdown() }
+    }
 
     // Pour l'effet de flash visuel
     var showFlashOverlay by remember { mutableStateOf(false) }
@@ -190,7 +201,7 @@ fun ScanScreen(
                                 }
                                 viewModel.onDataScanned(data, isManualTrigger)
                             }
-                            imageAnalysis.setAnalyzer(Executors.newSingleThreadExecutor(), analyzer)
+                            imageAnalysis.setAnalyzer(analysisExecutor, analyzer)
 
                             try {
                                 cameraProvider.unbindAll()
@@ -348,16 +359,16 @@ fun ScanScreen(
                                             val matrix = android.graphics.Matrix()
                                             matrix.postRotate(rotation.toFloat())
                                             val finalBitmap = android.graphics.Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-
-                                            val file = java.io.File(context.filesDir, "manual_${System.currentTimeMillis()}.jpg")
-                                            java.io.FileOutputStream(file).use { out ->
-                                                finalBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 85, out)
+                                            try {
+                                                val file = java.io.File(context.filesDir, "manual_${System.currentTimeMillis()}.jpg")
+                                                java.io.FileOutputStream(file).use { out ->
+                                                    finalBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 85, out)
+                                                }
+                                                file.absolutePath
+                                            } finally {
+                                                if (finalBitmap !== bitmap) bitmap.recycle()
+                                                finalBitmap.recycle()
                                             }
-                                            if (finalBitmap !== bitmap) {
-                                                bitmap.recycle()
-                                            }
-                                            finalBitmap.recycle()
-                                            file.absolutePath
                                         } catch (e: Exception) {
                                             Log.e("ScanScreen", "Failed to save manual image", e)
                                             null

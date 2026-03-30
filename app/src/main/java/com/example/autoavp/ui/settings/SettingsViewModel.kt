@@ -15,7 +15,6 @@ class SettingsViewModel @Inject constructor(
 
     val calibrationX: StateFlow<Float> = settingsRepository.calibrationX
     val calibrationY: StateFlow<Float> = settingsRepository.calibrationY
-    val continuousScan: StateFlow<Boolean> = settingsRepository.continuousScan
     val autoDetection: StateFlow<Boolean> = settingsRepository.autoDetection
 
     fun updateCalibrationX(value: Float) {
@@ -30,12 +29,6 @@ class SettingsViewModel @Inject constructor(
         }
     }
     
-    fun toggleContinuousScan(value: Boolean) {
-        viewModelScope.launch {
-            settingsRepository.setContinuousScan(value)
-        }
-    }
-
     fun toggleAutoDetection(value: Boolean) {
         viewModelScope.launch {
             settingsRepository.setAutoDetection(value)

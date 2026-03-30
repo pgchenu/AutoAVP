@@ -52,6 +52,13 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun clearOffice() {
+        _selectedOffice.value = null
+        viewModelScope.launch {
+            settingsRepository.setSelectedOfficeId(-1L)
+        }
+    }
+
     fun selectOffice(office: InstanceOfficeEntity) {
         _selectedOffice.value = office
         viewModelScope.launch {

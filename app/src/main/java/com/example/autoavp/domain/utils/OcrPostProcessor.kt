@@ -50,7 +50,7 @@ object OcrPostProcessor {
     }
 
     private fun isValidDepartment(dept: Int): Boolean {
-        return dept in 1..95 || dept in 97..98
+        return dept in 1..95 || dept in 97..99
     }
 
     private fun cleanArtifacts(line: String): String {

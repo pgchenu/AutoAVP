@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.autoavp.data.local.entities.MailItemEntity
+import androidx.compose.ui.text.font.FontStyle
 import com.example.autoavp.ui.navigation.Screen
 import kotlinx.coroutines.flow.MutableStateFlow
 import android.graphics.BitmapFactory
@@ -47,6 +48,7 @@ fun HomeScreen(
     var showNewSessionDialog by remember { mutableStateOf(false) }
     var isSearching by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
+    var showNoOfficeWarning by remember { mutableStateOf(false) }
 
     val filteredItems = remember(items, searchQuery) {
         if (searchQuery.isBlank()) items
@@ -105,13 +107,16 @@ fun HomeScreen(
                     }
                     IconButton(
                         onClick = {
-                            val officeId = selectedOffice?.officeId
                             val sessionId = latestSession?.sessionId
-                            if (officeId != null && sessionId != null) {
-                                navController.navigate(Screen.PrintPreview.createRoute(sessionId, officeId))
+                            if (sessionId != null) {
+                                if (selectedOffice == null) {
+                                    showNoOfficeWarning = true
+                                } else {
+                                    navController.navigate(Screen.PrintPreview.createRoute(sessionId, selectedOffice!!.officeId))
+                                }
                             }
                         },
-                        enabled = selectedOffice != null && items.isNotEmpty()
+                        enabled = items.isNotEmpty()
                     ) {
                         Icon(Icons.Default.Print, contentDescription = "Aperçu avant impression")
                     }
@@ -193,6 +198,14 @@ fun HomeScreen(
                         expanded = officeExpanded,
                         onDismissRequest = { officeExpanded = false }
                     ) {
+                        DropdownMenuItem(
+                            text = { Text("Aucun", fontStyle = FontStyle.Italic) },
+                            onClick = {
+                                viewModel.clearOffice()
+                                officeExpanded = false
+                            }
+                        )
+                        HorizontalDivider()
                         offices.forEach { office ->
                             DropdownMenuItem(
                                 text = { Text(office.name) },
@@ -326,6 +339,30 @@ fun HomeScreen(
             }
         )
     }
+
+    if (showNoOfficeWarning) {
+        AlertDialog(
+            onDismissRequest = { showNoOfficeWarning = false },
+            title = { Text("Bureau d'instance non sélectionné") },
+            text = { Text("Aucun bureau d'instance n'est sélectionné. La zone correspondante restera vide sur l'avis de passage. Voulez-vous continuer ?") },
+            confirmButton = {
+                Button(onClick = {
+                    showNoOfficeWarning = false
+                    val sessionId = latestSession?.sessionId
+                    if (sessionId != null) {
+                        navController.navigate(Screen.PrintPreview.createRoute(sessionId, -1L))
+                    }
+                }) {
+                    Text("Continuer")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showNoOfficeWarning = false }) {
+                    Text("Annuler")
+                }
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -335,6 +372,7 @@ fun MailItemRow(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     val isMismatch = item.validationStatus == "WARNING"
     // On considère qu'un item est "Non Vérifié" si on est en "CALCULATED" (pas d'OCR validé)
     // ET que c'est un format SmartData (86...) qui devrait normalement avoir une vérification.
@@ -406,10 +444,31 @@ fun MailItemRow(
                     )
                 }
             }
-            IconButton(onClick = onDelete) {
+            IconButton(onClick = { showDeleteConfirm = true }) {
                 Icon(Icons.Default.Delete, contentDescription = "Supprimer", tint = MaterialTheme.colorScheme.error)
             }
         }
+    }
+
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("Supprimer le courrier") },
+            text = { Text("Voulez-vous vraiment supprimer cet élément ?") },
+            confirmButton = {
+                Button(onClick = {
+                    onDelete()
+                    showDeleteConfirm = false
+                }) {
+                    Text("Supprimer")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) {
+                    Text("Annuler")
+                }
+            }
+        )
     }
 }
 

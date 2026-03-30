@@ -34,8 +34,10 @@ class PrintPreviewViewModel @Inject constructor(
     val calibrationY = settingsRepository.calibrationY
 
     init {
-        viewModelScope.launch {
-            _office.value = officeRepository.getOfficeById(officeId)
+        if (officeId > 0) {
+            viewModelScope.launch {
+                _office.value = officeRepository.getOfficeById(officeId)
+            }
         }
     }
 }

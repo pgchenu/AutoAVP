@@ -34,7 +34,12 @@ class AutoAvpAnalyzer @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val barcodeScanner: BarcodeScanner,
     private val textRecognizer: TextRecognizer
-) : ImageAnalysis.Analyzer {
+) : ImageAnalysis.Analyzer, java.io.Closeable {
+
+    override fun close() {
+        enhancedBitmap?.recycle()
+        enhancedBitmap = null
+    }
 
     var onResult: ((ScannedData, Boolean) -> Unit)? = null
     var onDetectionUpdate: ((String?, String?, List<RectF>?, Int, Int) -> Unit)? = null

@@ -41,6 +41,7 @@ fun PrintPreviewScreen(
     val calibY by viewModel.calibrationY.collectAsState(initial = 0f)
     val context = LocalContext.current
     var orientation by remember { mutableStateOf(PrintOrientation.HORIZONTAL) }
+    var reversed by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -63,13 +64,11 @@ fun PrintPreviewScreen(
                 Spacer(Modifier.weight(1f))
                 Button(
                     onClick = {
-                        office?.let {
-                            val generator = AvpPdfGenerator(context)
-                            generator.printSession(items, it, orientation, calibX, calibY)
-                        }
+                        val generator = AvpPdfGenerator(context)
+                        generator.printSession(items, office, orientation, reversed, calibX, calibY)
                     },
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    enabled = office != null && items.isNotEmpty()
+                    enabled = items.isNotEmpty()
                 ) {
                     Icon(Icons.Default.Print, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
@@ -101,13 +100,21 @@ fun PrintPreviewScreen(
                 Text("Vertical (Petit c\u00f4t\u00e9)")
             }
 
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = reversed,
+                    onCheckedChange = { reversed = it }
+                )
+                Text("Retourn\u00e9 (impression \u00e0 180\u00b0)")
+            }
+
             Spacer(Modifier.height(24.dp))
             
-            if (items.isNotEmpty() && office != null) {
+            if (items.isNotEmpty()) {
                 Text("Aper\u00e7u du premier avis (sur ${items.size}) :", style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.height(8.dp))
-                
-                AvpVisualPreview(item = items.first(), office = office!!, calibX = calibX, calibY = calibY)
+
+                AvpVisualPreview(item = items.first(), office = office, calibX = calibX, calibY = calibY)
                 
                 if (calibX != 0f || calibY != 0f) {
                     Spacer(Modifier.height(8.dp))
@@ -123,7 +130,7 @@ fun PrintPreviewScreen(
 }
 
 @Composable
-fun AvpVisualPreview(item: MailItemEntity, office: InstanceOfficeEntity, calibX: Float, calibY: Float) {
+fun AvpVisualPreview(item: MailItemEntity, office: InstanceOfficeEntity?, calibX: Float, calibY: Float) {
     val scale = 1.5f
     val widthDp = 210.dp * scale
     val heightDp = 99.dp * scale
